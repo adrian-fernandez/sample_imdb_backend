@@ -7,9 +7,15 @@ class Actor < ActiveRecord::Base
   end
 
   def self.manual_create(name)
-    new_id = Actor.last.try(:id) || 1
-    puts "MANUAL CREATE: #{new_id}"
-    Actor.create(name: name, imdb_id: "user_#{new_id}")
+    guesser = ImdbParser::MovieGuess.new(name)
+    fetched_actor = guesser.guess_actor
+
+    if fetched_actor.present? && fetched_actor[:name].downcase.strip == name.downcase.strip
+      return Actor.create(name: name, imdb_id: fetched_actor[:imdb_id], photo: fetched_actor[:poster])
+    else
+      new_id = Actor.last.try(:id) || 1
+      return Actor.create(name: name, imdb_id: "user_#{new_id}")
+    end
   end
 
   def self.add_batch_actors(actor_names)

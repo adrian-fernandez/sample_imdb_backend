@@ -51,7 +51,7 @@ ActiveRecord::Schema.define(version: 20161222082428) do
     t.string   "username"
     t.string   "password"
     t.string   "password_digest"
-    t.string   "token",           limit: 128
+    t.string   "token",           limit: 256
   end
 
 end

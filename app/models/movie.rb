@@ -77,12 +77,20 @@ class Movie < ActiveRecord::Base
       director_id = Director.find_or_create_by(name: movie[1].to_s)
       actor_ids = Actor.add_batch_actors(movie[4].split(";"))
 
-      newMovie = Movie.new(title: movie[0],
-                           director: director_id,
-                           year: movie[2],
-                           rate: movie[3],
-                           actor_ids: actor_ids,
-                           imdb_id: "user_#{last_id}")
+      movie_title = movie[0]
+      guesser = ImdbParser::MovieGuess.new(movie_title)
+      fetched_movie = guesser.guess_movie
+
+      if fetched_movie.present? && fetched_movie[:title].downcase.strip == movie_title.downcase.strip
+        newMovie = fetched_movie
+      else
+        newMovie = Movie.new(title: movie_title,
+                             director: director_id,
+                             year: movie[2],
+                             rate: movie[3],
+                             actor_ids: actor_ids,
+                             imdb_id: "user_#{last_id}")
+      end
 
       if newMovie.save
         result[:imported_movies] += 1
