@@ -108,7 +108,7 @@ module ImdbParser
                     .split('/')[2]
     end
 
-    def get_actors(imdb_id, parsed_ids)
+    def get_actors(imdb_id, parsed_actor_ids)
       actor_ids, data = MovieActorsParser.new(imdb_id, nil, parsed_actor_ids).import_actors
     end
   end
@@ -223,6 +223,7 @@ module ImdbParser
       full_title = page.css("h1[itemprop=name]").first.text
       year_text = page.css("span#titleYear").first.text
       title = full_title.gsub(year_text, '').strip
+      title = title[0..title.length - 2]
     end
 
     def import_director
@@ -263,7 +264,7 @@ module ImdbParser
 
     def sanitize_string(str='')
       # Only allow chars, nums and whitespaces
-      str.gsub(/[^(\w|\d )]/, " ").gsub(/ /,'_')
+      str.gsub(/[^(\w|\d )]/, " ").gsub(/ /,'_').downcase
     end
 
     def sanitize_data
@@ -275,6 +276,7 @@ module ImdbParser
 
     def suggestions
       data = []
+      return data if !json
 
       json.count.times do |pos|
         if is_movie?(pos)
@@ -291,8 +293,43 @@ module ImdbParser
       data
     end
 
+    def guess_movie
+      data = []
+      return nil if !json
+
+      json.count.times do |pos|
+        if is_movie?(pos)
+          imdb_id = json[pos].fetch('id', '')
+          return MovieParser.new(imdb_id, []).generate_movie_object
+        end
+      end
+
+      nil
+    end
+
+    def guess_actor
+      data = []
+      return nil if !json
+
+      json.count.times do |pos|
+        if is_actor?(pos)
+          imdb_id = json[pos].fetch('id', '')
+          return { name: json[pos].fetch('l', ''),
+                   imdb_id: imdb_id,
+                   poster: json[pos].fetch('i',[])[0] || BLANK_IMG }
+        end
+      end
+  
+      nil
+    end
+
     def is_movie?(position)
       json[position]['id'].start_with?('tt') && json[position]['q'] == 'feature'
     end
+
+    def is_actor?(position)
+      json[position]['id'].start_with?('nm') && json[position]['s'].start_with?('Actor')
+    end
   end
+
 end

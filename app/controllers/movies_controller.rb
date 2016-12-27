@@ -16,7 +16,6 @@ class MoviesController < ApplicationController
                      )
 
     if movie.save
-#      render json: { movie: movie }, status: 201
       render json: movie, status: 201
     else
       render json: { errors: ErrorSerializer.serialize(movie) }, status: 422
@@ -54,7 +53,6 @@ class MoviesController < ApplicationController
     movies = file_content.split("\n").map do |x|
       x.split(",")
     end
-    puts movies.to_yaml
 
     result = Movie.import_from_csv_data(movies)
 
