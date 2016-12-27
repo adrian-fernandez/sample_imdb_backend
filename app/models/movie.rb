@@ -3,6 +3,7 @@ class Movie < ActiveRecord::Base
 
   validates :title, presence: true, uniqueness: true
   validates :rate, presence: true
+  validates_numericality_of :rate, greater_than_or_equal_to: 0.0, less_than_or_equal_to: 10.0
 
   delegate :director_name, to: :director
 
