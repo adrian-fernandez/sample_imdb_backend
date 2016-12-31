@@ -7,9 +7,9 @@ class Actor < ActiveRecord::Base
   end
 
   def self.parse_actors(actors)
-    return [] if actors[:actors].blank?
+    return [] if actors.blank?
 
-    actor_names = actors[:actors].split(',')
+    actor_names = actors.split(',')
     Actor.add_batch_actors(actor_names)
   end
 
