@@ -50,13 +50,11 @@ class MoviesController < ApplicationController
   end
 
   def batch_create
+    require 'csv'
     file_content = Base64.decode64(params[:data].gsub("data:text/csv;base64,",""))
-    movies = file_content.split("\n").map do |x|
-      x.split(",")
-    end
+    movies = CSV.parse(file_content)
 
     result = Movie.import_from_csv_data(movies)
-
     render json: result, status: 201
   end
 
