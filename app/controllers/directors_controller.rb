@@ -1,5 +1,7 @@
 class DirectorsController < ApplicationController
 
+  include Authenticable
+
   protected
 
   def objects

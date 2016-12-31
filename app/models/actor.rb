@@ -6,6 +6,13 @@ class Actor < ActiveRecord::Base
     name
   end
 
+  def self.parse_actors(actors)
+    return [] if actors[:actors].blank?
+
+    actor_names = actors[:actors].split(',')
+    Actor.add_batch_actors(actor_names)
+  end
+
   def self.manual_create(name)
     guesser = ImdbParser::MovieGuess.new(name)
     fetched_actor = guesser.guess_actor

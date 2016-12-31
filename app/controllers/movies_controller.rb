@@ -1,8 +1,9 @@
 class MoviesController < ApplicationController
+  include Authenticable
 
   def create
     director = Director.find_or_create_by(name: movie_params[:director])
-    actor_imdb_ids = parse_actors
+    actor_imdb_ids = Actor.parse_actors(movie_params[:actors])
 
     imdb = movie_params['imdb-id'] || "user_#{Movie.get_next_imdb}"
 
@@ -109,13 +110,6 @@ class MoviesController < ApplicationController
 
   def serializer_name
     MovieSerializer
-  end
-
-  def parse_actors
-    return [] if movie_params[:actors].blank?
-
-    actor_names = movie_params[:actors].split(',')
-    Actor.add_batch_actors(actor_names)
   end
 
 end

@@ -12,17 +12,9 @@ class Movie < ActiveRecord::Base
   end
 
   def self.search(text)
-    by_actor = Movie.with_actor_name(text).pluck(:id)
-    by_director = Movie.with_director(text).pluck(:id)
-    by_title = Movie.with_title(text).pluck(:id)
-
-    found_ids = [by_actor, by_director, by_title].uniq
-
-    if found_ids.blank?
-      return where(id: -1)
-    else
-      return where(id: found_ids)
-    end
+    where(with_actor_name(text).arel.constraints.reduce(:and)
+      .or(with_director(text).arel.constraints.reduce(:and))
+      .or(with_title(text).arel.constraints.reduce(:and)))
   end
 
   def self.with_actor(actor_id)

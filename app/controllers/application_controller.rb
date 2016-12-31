@@ -1,6 +1,4 @@
 class ApplicationController < ActionController::API
-  before_filter :check_auth_token
-
   def index
     page = allowed_params.fetch(:number, 1).to_i
     limit = get_limit
@@ -37,18 +35,6 @@ class ApplicationController < ActionController::API
       total_pages: resource.total_pages,
       total_count: resource.total_count
     }.merge(extra_meta)
-  end
-
-  def check_auth_token
-    public_controllers = ['users', 'sessions', 'movies']
-
-    unless public_controllers.include?(params[:controller])
-      token = request.headers['AUTH-TOKEN']
-      return render json: { error: 401, message: "Unauthorized: missing AUTH-TOKEN" }, status: :unauthorized unless token
-
-      user = User.authenticate_by_token(token)
-      return render json: { error: 401, message: "Unauthorized: the AUTH-TOKEN doesn't correspond to any user." }, status: :unauthorized unless user
-    end
   end
 
   def json_resource_errors

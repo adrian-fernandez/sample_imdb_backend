@@ -9,11 +9,19 @@ class User < ActiveRecord::Base
     User.find_by_username(user).try(:authenticate, password)
   end
 
-  def self.authenticate_by_token(token)
-    User.find_by_token(token)
+  def self.authenticate_by_token(username, token)
+    user = User.find_by_username(username)
+    if user && ActiveSupport::SecurityUtils.secure_compare(user.token, token)
+      return user
+    else
+      return nil
+    end
   end
 
   def generate_token
-    update_attribute(:token, SecureRandom.hex(128))
+    token = loop do
+      token = SecureRandom.hex(128)
+      break token unless User.exists?(token: token)
+    end
   end
 end
